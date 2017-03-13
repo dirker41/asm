@@ -1,0 +1,91 @@
+
+		
+Addnum		MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Getline		Asc1
+		NumAdjust	Asc1
+		Asc2Bcd	Asc1,Bcd1,10
+		Asc2Bcd	AscSum,Bcd2,10
+		BcdAdd2	Bcd1,Bcd2
+		Bcd2Asc	Bcd2,AscSum,5
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'0'
+		MOV	[SI]+9,AL
+		MOV	SI,OFFSET Asc1
+		MOV	[SI]+9,AL
+		ENDM
+		
+Subnum		MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Getline		Asc1
+		NumAdjust	Asc1
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'$'
+		MOV	[SI]+9,AL
+		Asc2Bcd	Asc1,Bcd1,10
+		Asc2Bcd	AscSum,Bcd2,10
+		BcdSub2	Bcd1,Bcd2
+		Bcd2Asc	Bcd2,AscSum,5
+		MOV	SI,OFFSET Asc1
+		MOV	[SI]+9,AL
+		ENDM
+		
+BcdAdd2 MACRO Bcd1,Bcd2
+		local	Add1Bcd
+		MOV	SI,OFFSET Bcd1
+		MOV	DI,OFFSET Bcd2
+		MOV	CX,5
+		CLC
+Add1Bcd:	MOV	AL,[SI]+4
+		ADC	AL,[DI]+4
+		DAA
+		MOV	[DI]+4,AL
+		DEC	SI
+		DEC	DI
+		LOOP	Add1Bcd
+		MOV	SI,OFFSET Bcd1
+		MOV	DI,OFFSET Bcd2
+		ENDM
+		
+BcdSub2 MACRO Bcd1,Bcd2
+		local	Add1Bcd
+		MOV	SI,OFFSET Bcd1
+		MOV	DI,OFFSET Bcd2
+		MOV	CX,5
+		CLC
+Add1Bcd:	MOV	AL,[DI]+4
+		SBB	AL,[SI]+4
+		DAS
+		MOV	[DI]+4,AL
+		DEC	SI
+		DEC	DI
+		LOOP	Add1Bcd
+		MOV	SI,OFFSET Bcd1
+		MOV	DI,OFFSET Bcd2
+		ENDM
+		
+		
+Add10num	MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'$'
+		MOV	[SI]+9,AL
+		ENDM
+		
+		

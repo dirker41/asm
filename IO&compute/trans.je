@@ -1,0 +1,581 @@
+Asc2Bcd	MACRO Asc0,Bcd0,count0
+		local	char1
+		MOV	SI,OFFSET Asc0
+		MOV	DI,OFFSET Bcd0
+		MOV	CX,count0
+Char1:		MOV	AX,[SI]
+		XCHG	AH,AL
+		AND	AX,0f0fH
+		PUSH	CX
+		MOV	CL,4
+		SHL	AH,CL
+		OR	AL,AH
+		MOV	[DI],AL	
+		ADD	SI,2
+		INC	DI
+		POP	CX
+		LOOP	Char1
+		ENDM
+		
+Asc2Bcd2	MACRO Asc0,Bcd0,count0
+		local	char1
+		NumAdjust	Asc0
+		NumRshift	Asc0
+		MOV	SI,OFFSET Asc0
+		MOV	DI,OFFSET Bcd0
+		MOV	CX,count0
+Char1:		MOV	AX,[SI]
+		XCHG	AH,AL
+		AND	AX,0f0fH
+		PUSH	CX
+		MOV	CL,4
+		SHL	AH,CL
+		OR	AL,AH
+		MOV	[DI],AL	
+		ADD	SI,2
+		INC	DI
+		POP	CX
+		LOOP	Char1
+		MOV	DI,OFFSET Bcd0
+		MOV	AL,'$'
+		MOV	[DI][5],AL
+		ENDM
+		
+		
+Asc2unpacked	MACRO	Asc0,Unp0,count0
+		local	char1
+		NumAdjust	Asc0
+		MOV	SI,OFFSET Asc0
+		MOV	DI,OFFSET Unp0
+		MOV	CX,count0
+Char1:		MOV	AL,[SI]
+		AND	AL,0fH
+		MOV	[DI],AL	
+		INC	SI
+		INC	DI
+		LOOP	Char1
+		ENDM
+		
+Asc2unpacked2	MACRO	Asc0,Unp0,count0
+		local	char1
+		NumAdjust	Asc0
+		MOV	SI,OFFSET Asc0
+		MOV	DI,OFFSET Unp0
+		MOV	CX,count0
+		DEC	CX
+Char1:		MOV	AL,[SI]
+		AND	AL,0fH
+		MOV	[DI],AL	
+		INC	SI
+		INC	DI
+		LOOP	Char1
+		MOV	DI,OFFSET Unp0
+		MOV	AL,'$'
+		MOV	[DI][9],AL
+		ENDM
+
+Bcd2Asc	MACRO Bcd0,Asc0,count0
+		local	char2
+		MOV	SI,OFFSET Bcd0
+		MOV	DI,OFFSET Asc0
+		MOV	CX,count0
+Char2:		MOV	AL,[SI]
+		MOV	AH,AL
+		AND	AX,0f00fH
+		PUSH	CX
+		MOV	CL,4
+		SHR	AH,CL
+		OR	AX,3030H
+		XCHG	AH,AL
+		MOV	[DI],AX
+		INC	SI
+		ADD	DI,2
+		POP	CX
+		LOOP	Char2
+		ENDM
+
+BcdAdd MACRO Bcd1,Bcd2,BcdSum
+		local	Add1Bcd
+		MOV	SI,OFFSET Bcd1
+		MOV	DI,OFFSET Bcd2
+		MOV	BX,OFFSET BcdSum
+		MOV	CX,5
+		CLC
+Add1Bcd:	MOV	AL,[SI]+4
+		ADC	AL,[DI]+4
+		DAA
+		MOV	[BX]+4,AL
+		DEC	SI
+		DEC	DI
+		DEC	BX
+		LOOP	Add1Bcd
+		ENDM
+
+BcdSub MACRO Bcd1,Bcd2,BcdSum
+		local	Add1Bcd
+		MOV	SI,OFFSET Bcd1
+		MOV	DI,OFFSET Bcd2
+		MOV	BX,OFFSET BcdSum
+		MOV	CX,5
+		CLC
+Add1Bcd:	MOV	AL,[SI]+4
+		SBB	AL,[DI]+4
+		DAS
+		MOV	[BX]+4,AL
+		DEC	SI
+		DEC	DI
+		DEC	BX
+		LOOP	Add1Bcd
+		ENDM
+		
+		
+Exchange MACRO Data1,Data2
+		local	Chk1Ch
+		local	Change
+		local	Over
+		CLC
+		MOV	SI,OFFSET Data1
+		MOV	DI,OFFSET Data2
+		MOV	CX,15
+Chk1Ch:		MOV	AL,[SI]     
+		CMP	AL,'A'
+		JB	Over
+		CMP	AL,'z'
+		JA	Over
+		CMP	AL,'Z'
+		JBE	Change
+		CMP	AL,'a'
+		JB	Over
+Change:		XOR	AL,00100000B
+Over:		MOV	[DI],AL
+		INC	SI
+		INC	DI
+		loop	Chk1Ch
+		ENDM
+		
+Big2Small MACRO Data1,Data2
+		local	Chk1Ch
+		local	Over
+		CLC
+		MOV	SI,OFFSET Data1
+		MOV	DI,OFFSET Data2
+		MOV	CX,15
+Chk1Ch:		MOV	AL,[SI]     
+		CMP	AL,'A'
+		JB	Over
+		CMP	AL,'Z'
+		JA	Over
+		OR	AL,00100000B
+Over:		MOV	[DI],AL
+		INC	SI
+		INC	DI
+		loop	Chk1Ch
+		ENDM
+		
+Small2Big MACRO Data1,Data2
+		local	Chk1Ch
+		local	Over
+		local	Change
+		CLC
+		MOV	SI,OFFSET Data1
+		MOV	DI,OFFSET Data2
+		MOV	CX,15
+Chk1Ch:		MOV	AL,[SI]     
+		CMP	AL,'a'
+		JB	Over
+		CMP	AL,'z'
+		JA	Over
+Change:		and	AL,11011111B
+Over:		MOV	[DI],AL
+		INC	SI
+		INC	DI
+		loop	Chk1Ch
+		ENDM
+		
+scanf	MACRO	instr
+		MOV	AH,0AH
+		LEA	DX,instr
+		INT	21H
+		ENDM
+		
+printf	MACRO	outstr
+		MOV	AH,09H
+		LEA	DX,outstr
+		INT	21H
+		ENDM
+
+asciiz	MACRO	instr
+		SUB	BH,BH
+		MOV	BL,instr+1
+		MOV	instr[BX],0
+		ENDM
+		
+in2out	MACRO	instr
+		SUB	BX,BX
+		MOV	BL,instr[1]
+		ADD	BX,2
+		MOV	AL,'$'
+		MOV	instr[BX],AL
+		ENDM
+		
+Getch	MACRO	ch
+		MOV	AH,01H
+		INT	21H
+		MOV	ch,AL
+		ENDM
+		
+Getchsec	MACRO	ch
+		MOV	AH,08H
+		INT	21H
+		MOV	ch,AL
+		ENDM
+		
+
+Putch	MACRO	ch
+		MOV	AH,02H
+		MOV	DL,ch
+		INT	21H
+		ENDM
+		
+CR	MACRO	
+		MOV	AH,02H
+		MOV	DL,0DH
+		INT	21H
+		ENDM
+		
+LF	MACRO	
+		MOV	AH,02H
+		MOV	DL,0AH
+		INT	21H
+		ENDM
+
+CRLF	MACRO	
+		MOV	AH,02H
+		MOV	DL,0AH
+		INT	21H
+		MOV	AH,02H
+		MOV	DL,0DH
+		INT	21H
+		ENDM
+		
+Data2Str	MACRO	Data,Str,count0
+		local	chloop
+		MOV	SI,OFFSET Data
+		MOV	DI,OFFSET Str
+		MOV	CX,count0
+chloop:		MOV	AL,[SI]
+		MOV	[DI],AL
+		inc	SI
+		INC	DI
+		loop	chloop
+		MOV	AL,'$'
+		MOV	[DI],AL
+		ENDM
+		
+Strshift	MACRO	Str	;10戈锣Θ块﹃Юぺ干$
+		local	chloop
+		MOV	SI,OFFSET Str
+		MOV	CX,10
+chloop:		MOV	AL,[SI][1]
+		MOV	[SI],AL
+		inc	SI
+		loop	chloop
+		MOV	AL,'$'
+		inc	SI
+		MOV	[SI],AL
+		ENDM
+		
+NumRshift	MACRO	Str
+		local	chloop
+		PUSH	SI
+		MOV	SI,OFFSET Str
+		PUSH	CX
+		MOV	CX,10
+chloop:		MOV	AL,[SI][8]
+		MOV	[SI][9],AL
+		dec	SI
+		loop	chloop
+		MOV	AL,'0'
+		MOV	SI,OFFSET Str
+		MOV	[SI],AL
+		POP	CX
+		PUSH	SI
+		ENDM
+
+NumAdjust	MACRO	Str
+		local	chloop
+		local	quit1
+		PUSH	SI
+		MOV	SI,OFFSET Str
+		MOV	CX,10
+chloop:		MOV		AL,'$'
+		CMP		[SI][9],AL
+		JE		quit1
+		NumRshift	Str
+		loop		chloop
+quit1:		POP	SI
+		ENDM
+
+		
+		
+asc2binary      MACRO	        str,hex,binary
+                Asc2unpacked	str,str,10
+                mov             SI,OFFSET str
+                mov             DI,OFFSET hex
+                SUB		AX,AX
+                SUB		BX,BX
+                
+                mov             AL,[SI][8]
+                MOV		BL,AL		;计
+                mov             AL,[SI][7]
+                mov		CX,10
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX		;计
+                SUB		AX,AX
+                mov             AL,[SI][6]
+                mov		CX,100
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX		;κ计
+                SUB		AX,AX
+                mov             AL,[SI][5]
+                mov		CX,1000
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX
+                SUB		AX,AX
+                mov             AL,[SI][4]
+                mov		CX,10000
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX
+                
+                MOV		[DI],AH
+                MOV		[DI][1],AL
+                MOV		AL,'$'
+                MOV		[DI][2],AL
+                hex2binary	hex,binary
+                ENDM
+                
+asc2hex		MACRO	        str,hex
+                Asc2unpacked	str,str,10
+                mov             SI,OFFSET str
+                mov             DI,OFFSET hex
+                SUB		AX,AX
+                SUB		BX,BX
+                
+                mov             AL,[SI][8]
+                MOV		BL,AL		;计
+                mov             AL,[SI][7]
+                mov		CX,10
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX		;计
+                SUB		AX,AX
+                mov             AL,[SI][6]
+                mov		CX,100
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX		;κ计
+                SUB		AX,AX
+                mov             AL,[SI][5]
+                mov		CX,1000
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX
+                SUB		AX,AX
+                mov             AL,[SI][4]
+                mov		CX,10000
+                MUL		CX
+                add		AX,BX
+                MOV		BX,AX
+                
+                MOV		[DI],AH
+                MOV		[DI][1],AL
+                MOV		AL,'$'
+                MOV		[DI][2],AL
+                ENDM
+                
+                
+hex2binary	MACRO		hex,binary
+		local		p1f1
+		local		p2f1
+		local		p2f0
+		local		p3f1
+		local		p3f0
+		local		p4f1
+		local		p4f0
+		local		loopf1
+		MOV		SI,OFFSET hex
+		MOV		DI,OFFSET binary
+		SUB		AX,AX
+		SUB		BX,BX
+		
+		MOV		AL,[SI]
+		MOV		CL,4
+		SHL		AX,CL
+		SHR		AL,CL
+		MOV		BX,AX
+		
+		MOV		AH,'1'
+		MOV		AL,BH
+		
+		MOV		CX,2
+loopf1:		CMP		AL,08H
+		JB		p1f1
+		MOV		[DI],AH
+p1f1:		INC		DI
+		
+		CMP		AL,12
+		JAE		p2f1
+		CMP		AL,4
+		JE		p2f1
+		CMP		AL,5
+		JE		p2f1
+		CMP		AL,6
+		JE		p2f1
+		CMP		AL,7
+		JE		p2f1
+		JMP		p2f0
+p2f1:		MOV		[DI],AH
+p2f0:		INC		DI
+
+		CMP		AL,2
+		JE		p3f1
+		CMP		AL,3
+		JE		p3f1
+		CMP		AL,6
+		JE		p3f1
+		CMP		AL,7
+		JE		p3f1
+		CMP		AL,10
+		JE		p3f1
+		CMP		AL,11
+		JE		p3f1
+		CMP		AL,14
+		JE		p3f1
+		CMP		AL,15
+		JE		p3f1
+		JMP		p3f0
+p3f1:		MOV		[DI],AH
+p3f0:		INC		DI
+
+		CMP		AL,1
+		JE		p4f1
+		CMP		AL,3
+		JE		p4f1
+		CMP		AL,5
+		JE		p4f1
+		CMP		AL,7
+		JE		p4f1
+		CMP		AL,9
+		JE		p4f1
+		CMP		AL,11
+		JE		p4f1
+		CMP		AL,13
+		JE		p4f1
+		CMP		AL,15
+		JE		p4f1
+		JMP		p4f0
+p4f1:		MOV		[DI],AH
+p4f0:		INC		DI
+		INC		DI
+		MOV		AL,BL
+		loop		loopf1
+
+
+		hex2binary2	hex,binary
+
+		ENDM
+		
+		
+
+		
+hex2binary2	MACRO		hex,binary
+		local		p1f1
+		local		p2f1
+		local		p2f0
+		local		p3f1
+		local		p3f0
+		local		p4f1
+		local		p4f0
+		local		loopf1
+		MOV		SI,OFFSET hex
+		MOV		DI,OFFSET binary
+		SUB		AX,AX
+		SUB		BX,BX
+		
+		MOV		AL,[SI][1]
+		MOV		CL,4
+		SHL		AX,CL
+		SHR		AL,CL
+		MOV		BX,AX
+		ADD		DI,10
+		
+		MOV		AH,'1'
+		MOV		AL,BH
+		
+		MOV		CX,2
+loopf1:		CMP		AL,08H
+		JB		p1f1
+		MOV		[DI],AH
+p1f1:		INC		DI
+		
+		CMP		AL,12
+		JAE		p2f1
+		CMP		AL,4
+		JE		p2f1
+		CMP		AL,5
+		JE		p2f1
+		CMP		AL,6
+		JE		p2f1
+		CMP		AL,7
+		JE		p2f1
+		JMP		p2f0
+p2f1:		MOV		[DI],AH
+p2f0:		INC		DI
+
+		CMP		AL,2
+		JE		p3f1
+		CMP		AL,3
+		JE		p3f1
+		CMP		AL,6
+		JE		p3f1
+		CMP		AL,7
+		JE		p3f1
+		CMP		AL,10
+		JE		p3f1
+		CMP		AL,11
+		JE		p3f1
+		CMP		AL,14
+		JE		p3f1
+		CMP		AL,15
+		JE		p3f1
+		JMP		p3f0
+p3f1:		MOV		[DI],AH
+p3f0:		INC		DI
+
+		CMP		AL,1
+		JE		p4f1
+		CMP		AL,3
+		JE		p4f1
+		CMP		AL,5
+		JE		p4f1
+		CMP		AL,7
+		JE		p4f1
+		CMP		AL,9
+		JE		p4f1
+		CMP		AL,11
+		JE		p4f1
+		CMP		AL,13
+		JE		p4f1
+		CMP		AL,15
+		JE		p4f1
+		JMP		p4f0
+p4f1:		MOV		[DI],AH
+p4f0:		INC		DI
+		INC		DI
+		MOV		AL,BL
+		loop		loopf1
+		ENDM

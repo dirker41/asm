@@ -1,0 +1,212 @@
+		include<trans.je>
+;-----------------------start easy input-----------
+Getline	MACRO	instr
+		local	enter
+		local	start
+		mov	SI,OFFSET instr
+		mov	CX,50
+start:		MOV	BL,[SI]
+		Getch	BL
+		cmp	BL,0dh
+		je	enter
+		MOV	[SI],BL
+		inc	SI
+		loop	start
+enter:		MOV	BL,'$'
+		mov	[SI],BL
+		mov	SI,OFFSET instr
+		ENDM
+		
+Getcolumn	MACRO	instr
+		local	enter
+		local	start
+		mov	SI,OFFSET instr
+		mov	CX,50
+start:		MOV	BL,[SI]
+		Getch	BL
+		cmp	BL,0dh
+		je	enter
+		CRLF
+		MOV	[SI],BL
+		inc	SI
+		loop	start
+enter:		MOV	BL,'$'
+		mov	[SI],BL
+		mov	SI,OFFSET instr
+		ENDM
+		
+Getslanted	MACRO	instr
+		local	enter
+		local	start
+		mov	SI,OFFSET instr
+		mov	CX,50
+start:		MOV	BL,[SI]
+		Getch	BL
+		cmp	BL,0dh
+		je	enter
+		LF
+		MOV	[SI],BL
+		inc	SI
+		loop	start
+enter:		MOV	BL,'$'
+		mov	[SI],BL
+		mov	SI,OFFSET instr
+		ENDM
+;-----------------------end easy input-------------
+;-----------------------start sec input------------
+Getlinesec	MACRO	instr
+		local	enter
+		local	start
+		mov	SI,OFFSET instr
+		mov	CX,50
+start:		MOV	BL,[SI]
+		Getchsec	BL
+		cmp	BL,0dh
+		je	enter
+		Putch	'*'
+		MOV	[SI],BL
+		inc	SI
+		loop	start
+enter:		MOV	BL,'$'
+		mov	[SI],BL
+		mov	SI,OFFSET instr
+		ENDM
+		
+Getcolumnsec	MACRO	instr
+		local	enter
+		local	start
+		mov	SI,OFFSET instr
+		mov	CX,50
+start:		MOV	BL,[SI]
+		Getchsec	BL
+		cmp	BL,0dh
+		je	enter
+		Putch	'*'
+		CRLF
+		MOV	[SI],BL
+		inc	SI
+		loop	start
+enter:		MOV	BL,'$'
+		mov	[SI],BL
+		mov	SI,OFFSET instr
+		ENDM
+		
+Getslantedsec	MACRO	instr
+		local	enter
+		local	start
+		mov	SI,OFFSET instr
+		mov	CX,50
+start:		MOV	BL,[SI]
+		Getchsec	BL
+		cmp	BL,0dh
+		je	enter
+		Putch	'*'
+		LF
+		MOV	[SI],BL
+		inc	SI
+		loop	start
+enter:		MOV	BL,'$'
+		mov	[SI],BL
+		mov	SI,OFFSET instr
+		ENDM
+;-----------------------end sec input------------
+;-----------------------start print--------------
+Printline	MACRO	outstr
+		local	start
+		local	en
+		mov	SI,OFFSET outstr
+		mov	CX,50
+		CRLF
+start:		mov	BL,[SI]
+		cmp	BL,'$'
+		je	en
+		Putch	BL
+		inc	SI
+		loop	start
+en:		mov	SI,OFFSET outstr
+		ENDM
+		
+Printcolumn	MACRO	outstr
+		local	start
+		local	en
+		mov	SI,OFFSET outstr
+		mov	CX,50
+start:		mov	BL,[SI]
+		cmp	BL,'$'
+		je	en
+		CRLF
+		Putch	BL
+		inc	SI
+		loop	start
+en:		mov	SI,OFFSET outstr
+		ENDM
+		
+Printslanted	MACRO	outstr
+		local	start
+		local	en
+		mov	SI,OFFSET outstr
+		mov	CX,50
+		CR
+start:		mov	BL,[SI]
+		cmp	BL,'$'
+		je	en
+		LF
+		Putch	BL
+		inc	SI
+		loop	start
+en:		mov	SI,OFFSET outstr
+		ENDM
+		
+;---------------end print-------------------
+
+GetNumber	MACRO	instr1,instr2
+		local	getno
+		local	over
+		local	next
+		local	done
+		mov	SI,OFFSET instr1
+		MOV	DI,OFFSET instr2
+		MOV	CX,50
+getno:		mov	AL,[SI]
+		cmp	AL,'$'
+		JE	done
+		cmp	AL,'0'
+		jb	over
+		cmp	AL,'9'
+		ja	over
+		MOV	[DI],AL
+		jmp	next
+over:		MOV	AL,00H
+		MOV	[DI],AL
+next:		INC	SI
+		INC	DI
+		loop	getno
+done:		mov	AL,'$'
+		MOV	[DI],AL
+		ENDM
+		
+GetString	MACRO	instr1,instr2
+		local	getno
+		local	over
+		local	next
+		local	done
+		mov	SI,OFFSET instr1
+		MOV	DI,OFFSET instr2
+		MOV	CX,50
+getno:		mov	AL,[SI]
+		cmp	AL,'$'
+		JE	done
+		cmp	AL,'0'
+		jb	over
+		cmp	AL,'9'
+		ja	over
+		MOV	AL,00H
+over:		MOV	[DI],AL
+		INC	SI
+		INC	DI
+		loop	getno
+done:		mov	AL,'$'
+		MOV	[DI],AL
+		ENDM
+		
+

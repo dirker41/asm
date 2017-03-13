@@ -1,0 +1,185 @@
+
+Average10num	MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Add10num	Asc1,Bcd1,Bcd2,AscSum
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'$'
+		MOV	[SI]+9,AL
+		MOV	AH,[SI]+8
+		MOV	AL,'.'
+		MOV	[SI]+8,AL
+		MOV	[SI]+9,AH
+		MOV	Al,'$'
+		MOV	[SI]+10,AL
+		ENDM
+		
+Add2Num		MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'$'
+		MOV	[SI]+9,AL
+		Printline	AscSum
+		CRLF
+		ClearStr	AscSum
+		ENDM
+		
+ClearStr	MACRO	Str
+		local	ch1
+		PUSH	SI
+		MOV	SI,OFFSET Str
+		push	CX
+		MOV	CX,10
+ch1:		MOV	AL,'0'
+		MOV	[SI],AL
+		INC	SI
+		loop	ch1
+		POP	CX
+		POP	SI
+		ENDM
+		
+Add2Num5	MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Add2Num		Asc1,Bcd1,Bcd2,AscSum
+		Add2Num		Asc1,Bcd1,Bcd2,AscSum
+		Add2Num		Asc1,Bcd1,Bcd2,AscSum
+		Add2Num		Asc1,Bcd1,Bcd2,AscSum
+		Add2Num		Asc1,Bcd1,Bcd2,AscSum
+		ENDM
+		
+Sub2Num		MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Subnum	Asc1,Bcd1,Bcd2,AscSum
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'$'
+		MOV	[SI]+9,AL
+		Printline	AscSum
+		CRLF
+		ClearStr	AscSum
+		ENDM
+		
+Sub2Num5	MACRO	Asc1,Bcd1,Bcd2,AscSum
+		Sub2Num		Asc1,Bcd1,Bcd2,AscSum
+		Sub2Num		Asc1,Bcd1,Bcd2,AscSum
+		Sub2Num		Asc1,Bcd1,Bcd2,AscSum
+		Sub2Num		Asc1,Bcd1,Bcd2,AscSum
+		Sub2Num		Asc1,Bcd1,Bcd2,AscSum
+		ENDM
+
+NumAS		MACRO	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		CRLF
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		Cmpch	Asc1,Bcd1,Bcd2,AscSum,ch1
+		MOV	SI,OFFSET AscSum
+		MOV	AL,'$'
+		MOV	[SI]+9,AL
+		ENDM
+
+Cmpch		MACRO	Asc1,Bcd1,Bcd2,AscSum,ch1
+		local	Add1
+		local	Sub1
+		local	done
+		Getch	ch1
+		
+		MOV	SI,OFFSET ch1
+		MOV	AL,[SI]
+		cmp	AL,'-'
+		JE	Sub1
+Add1:		Addnum	Asc1,Bcd1,Bcd2,AscSum
+		JMP	done
+Sub1:		SubNum	Asc1,Bcd1,Bcd2,AscSum
+done:		CRLF
+		ENDM
+		
+		
+division	MACRO	dividend,divisor,quotient,remainder,hex1,hex2
+		Getline	dividend
+		asc2hex	dividend,hex1
+		CRLF
+		Getline	divisor
+		asc2hex	divisor,hex2
+		
+		MOV	SI,OFFSET hex1
+		MOV	DI,OFFSET hex2
+		
+		MOV	AH,[SI]
+		inc	SI
+		MOV	AL,[SI]
+		SUB	DX,DX
+		
+		MOV	BH,[DI]
+		inc	DI
+		MOV	BL,[DI]
+		
+		DIV	BX
+		
+		MOV	SI,OFFSET hex1
+		MOV	DI,OFFSET hex2
+		
+		MOV	[SI],AH
+		INC	SI
+		MOV	[SI],AL
+		
+		MOV	[DI],DH
+		INC	DI
+		MOV	[DI],DL
+		
+		division2	quotient,remainder,hex1,hex2
+		ENDM
+		
+division2	MACRO	quotient,remainder,hex1,hex2
+		local	mod10
+		MOV	SI,OFFSET hex1
+		MOV	DI,OFFSET quotient
+		
+		MOV	AH,[SI]
+		inc	SI
+		MOV	AL,[SI]
+		MOV	BX,10
+		
+		
+		MOV	CX,9
+mod10:		XOR	DX,DX
+		DIV	BX
+		
+		ADD	DL,[DI][8]
+		MOV	[DI][8],DL
+		DEC	DI
+		XOR	DX,DX
+		loop	mod10
+		
+		division3	remainder,hex2
+		ENDM
+		
+		
+division3	MACRO	remainder,hex2
+		local	mod10
+		MOV	SI,OFFSET hex2
+		MOV	DI,OFFSET remainder
+		
+		MOV	AH,[SI]
+		inc	SI
+		MOV	AL,[SI]
+		MOV	BX,10
+		
+		
+		MOV	CX,9
+mod10:		XOR	DX,DX
+		DIV	BX
+		
+		ADD	DL,[DI][8]
+		MOV	[DI][8],DL
+		DEC	DI
+		XOR	DX,DX
+		loop	mod10
+		
+		ENDM
